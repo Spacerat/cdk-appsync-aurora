@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/*.js": true,
+    "**/*.d.ts": true,
+    "**/node_modules": true,
+    "**/.cdk.staging": true,
+    "**/cdk.out": true
+  },
+  "cSpell.enabledLanguageIds": [
+    "markdown"
+]
+}

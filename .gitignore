@@ -1,7 +1,12 @@
+.DS_Store
 *.js
 *.d.ts
 node_modules
 
+# Sensitive local stuff
+query.sh
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+

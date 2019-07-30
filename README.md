@@ -1,7 +1,9 @@
-# Useful commands
+# AppSync / Aurora in AWS CDK
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+**THIS IS A WORK IN PROGRESS**
+
+## Design
+
+Each inseparable part of the architecture will use a different CloudFormation stack.
+
+![Stacks](doc/stacks.png)

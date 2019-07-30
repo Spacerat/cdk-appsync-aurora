@@ -1,9 +1,8 @@
-import cdk = require('@aws-cdk/core');
+import cdk = require("@aws-cdk/core");
+import appsync = require("@aws-cdk/aws-appsync");
 
-export class AppsyncStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+export class AppSyncStack extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
-
-    // The code that defines your stack goes here
   }
 }

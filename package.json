@@ -16,7 +16,14 @@
     "aws-cdk": "^1.2.0"
   },
   "dependencies": {
+    "@aws-cdk/aws-appsync": "^1.2.0",
+    "@aws-cdk/aws-ec2": "^1.2.0",
+    "@aws-cdk/aws-kms": "^1.2.0",
+    "@aws-cdk/aws-rds": "^1.2.0",
+    "@aws-cdk/aws-secretsmanager": "^1.2.0",
     "@aws-cdk/core": "^1.2.0",
+    "@aws-cdk/custom-resources": "^1.2.0",
+    "checked-aws-custom-resource": "^0.1.8",
     "source-map-support": "^0.5.9"
   }
 }

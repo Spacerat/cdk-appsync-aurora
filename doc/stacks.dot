@@ -1,0 +1,12 @@
+digraph architecture {
+  rankdir=TB;
+  
+  VPC -> DB
+  DB -> MigrationsService
+
+  { rank=same; DB MigrationsService };
+
+  DB -> AppSync 
+  MigrationsService -> AppSync [style=dotted];
+  
+}
