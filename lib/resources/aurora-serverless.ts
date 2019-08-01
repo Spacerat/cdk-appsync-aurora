@@ -3,6 +3,7 @@ import rds = require("@aws-cdk/aws-rds");
 import ec2 = require("@aws-cdk/aws-ec2");
 import kms = require("@aws-cdk/aws-kms");
 import custom = require("@aws-cdk/custom-resources");
+import secretsmanager = require("@aws-cdk/aws-secretsmanager");
 import { CheckedAwsCustomResource } from "checked-aws-custom-resource";
 
 const DEFAULT_SCALING_CONFIG = {
@@ -13,12 +14,17 @@ const DEFAULT_SCALING_CONFIG = {
 };
 
 /**
- * Username and password combination
+ * Username and optional login.
  */
 export interface Login {
   readonly username: string;
-  readonly password?: cdk.SecretValue;
   readonly kmsKey?: kms.IKey;
+}
+
+export interface IServerlessDatabase extends cdk.IResource {
+  clusterIdentifier: string;
+  clusterArn: string;
+  secret: secretsmanager.ISecret;
 }
 
 export interface AuroraServerlessProps {
@@ -27,10 +33,14 @@ export interface AuroraServerlessProps {
   vpc: ec2.IVpc;
   subnets: Array<ec2.ISubnet>;
   scalingConfiguration?: rds.CfnDBCluster.ScalingConfigurationProperty;
+  name?: string;
 }
 
-export class AuroraServerless extends cdk.Construct {
-  public readonly cluster: rds.CfnDBCluster;
+export class AuroraServerless extends cdk.Resource
+  implements secretsmanager.ISecretAttachmentTarget, IServerlessDatabase {
+  public readonly clusterIdentifier: string;
+  public readonly clusterArn: string;
+  public readonly secret: secretsmanager.ISecret;
 
   constructor(scope: cdk.Construct, id: string, props: AuroraServerlessProps) {
     super(scope, id);
@@ -50,22 +60,14 @@ export class AuroraServerless extends cdk.Construct {
 
     // Make login info from secret
 
-    let secret;
-    if (!props.masterUser.password) {
-      secret = new rds.DatabaseSecret(this, "Secret", {
-        username: props.masterUser.username,
-        encryptionKey: props.masterUser.kmsKey
-      });
-    }
-    const masterUsername = secret
-      ? secret.secretValueFromJson("username").toString()
-      : props.masterUser.username;
+    const secret = new rds.DatabaseSecret(this, "Secret", {
+      username: props.masterUser.username,
+      encryptionKey: props.masterUser.kmsKey
+    });
 
-    const masterPassword = secret
-      ? secret.secretValueFromJson("password").toString()
-      : props.masterUser.password
-      ? props.masterUser.password.toString()
-      : undefined;
+    const masterUsername = secret.secretValueFromJson("username").toString();
+
+    const masterPassword = secret.secretValueFromJson("password").toString();
 
     // Create database cluster
 
@@ -74,6 +76,7 @@ export class AuroraServerless extends cdk.Construct {
       : DEFAULT_SCALING_CONFIG;
 
     const db = new rds.CfnDBCluster(this, "Resource", {
+      databaseName: props.name,
       engine: "aurora",
       engineMode: "serverless",
       masterUsername: masterUsername,
@@ -82,6 +85,13 @@ export class AuroraServerless extends cdk.Construct {
       dbSubnetGroupName: dbSubnetGroup.ref,
       vpcSecurityGroupIds: [securityGroup.securityGroupId]
     });
+    this.clusterIdentifier = db.ref;
+
+    this.secret = secret.addTargetAttachment("AttachedSecret", {
+      target: this
+    });
+
+    this.clusterArn = constructArn(this.stack, db);
 
     // Configure Data API
 
@@ -99,7 +109,18 @@ export class AuroraServerless extends cdk.Construct {
       onCreate: updateDataAPI(props.enableDataAPI),
       onUpdate: updateDataAPI(props.enableDataAPI)
     });
-
-    this.cluster = db;
   }
+
+  public asSecretAttachmentTarget(): secretsmanager.SecretAttachmentTargetProps {
+    return {
+      targetId: this.clusterIdentifier,
+      targetType: secretsmanager.AttachmentTargetType.CLUSTER
+    };
+  }
+}
+
+function constructArn(stack: cdk.Stack, cluster: rds.CfnDBCluster): string {
+  // HACK: a limitation of CloudFormation itself means that we have to construct the ARN
+  // from scratch. There is no way to get a cluster's ARN programatically. 4 srs CF???
+  return `arn:aws:rds:${stack.region}:${stack.account}:cluster:${cluster.ref}`;
 }

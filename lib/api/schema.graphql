@@ -1,0 +1,14 @@
+type Query {
+  getThing(foo: Int!): Thing
+  getThings: [Thing]
+  wutTheBut: Thing
+}
+
+type Thing {
+  foo: Int!
+  bar: String
+}
+
+schema {
+  query: Query
+}
