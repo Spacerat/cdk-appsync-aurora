@@ -25,6 +25,7 @@ export interface IServerlessDatabase extends cdk.IResource {
   clusterIdentifier: string;
   clusterArn: string;
   secret: secretsmanager.ISecret;
+  region: string;
 }
 
 export interface AuroraServerlessProps {
@@ -41,6 +42,7 @@ export class AuroraServerless extends cdk.Resource
   public readonly clusterIdentifier: string;
   public readonly clusterArn: string;
   public readonly secret: secretsmanager.ISecret;
+  public readonly region: string;
 
   constructor(scope: cdk.Construct, id: string, props: AuroraServerlessProps) {
     super(scope, id);
@@ -92,6 +94,7 @@ export class AuroraServerless extends cdk.Resource
     });
 
     this.clusterArn = constructArn(this.stack, db);
+    this.region = this.stack.region;
 
     // Configure Data API
 

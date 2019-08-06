@@ -9,11 +9,14 @@ const app = new cdk.App();
 
 const vpc = new VPCStack(app, "VPC");
 const db = new DBStack(app, "DB", { vpc: vpc.vpc });
+
+const dbConfig = {
+  awsRegion: db.db.region,
+  dbSecret: db.db.secret,
+  clusterArn: db.db.clusterArn,
+  databaseName: "testdb"
+};
+
 const appsync = new AppSyncStack(app, "AppSync", {
-  dbConfig: {
-    awsRegion: db.region,
-    dbSecret: db.db.secret,
-    databaseName: "testdb",
-    clusterArn: db.db.clusterArn
-  }
+  dbConfig: dbConfig
 });
