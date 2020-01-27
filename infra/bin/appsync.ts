@@ -4,6 +4,7 @@ import cdk = require("@aws-cdk/core");
 import { DBStack } from "../lib/db-stack";
 import { VPCStack } from "../lib/vpc-stack";
 import { AppSyncStack } from "../lib/appsync-stack";
+import { MigrationStack } from "../lib/migration-stack";
 
 const app = new cdk.App();
 
@@ -16,6 +17,10 @@ const dbConfig = {
   clusterArn: db.db.clusterArn,
   databaseName: "testdb"
 };
+
+// const migrations = new MigrationStack(app, "Migrations", {
+//   dbConfig: dbConfig
+// });
 
 const appsync = new AppSyncStack(app, "AppSync", {
   dbConfig: dbConfig
